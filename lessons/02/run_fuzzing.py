@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 import os
 import subprocess
+import multiprocessing as mp
 
 WORK_DIR = 'work'
 
@@ -13,7 +14,8 @@ def checkOutput(s):
 corpus_dir = os.path.join(WORK_DIR, 'corpus')
 corpus_filenames = os.listdir(corpus_dir)
 
-for f in corpus_filenames:
+
+def test_corpus_filename(f):
   testcase_path = os.path.join(corpus_dir, f)
   cmd = ['bin/asan/pdfium_test', testcase_path]
   process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -23,3 +25,10 @@ for f in corpus_filenames:
     print testcase_path
     print output
     print '-' * 80
+
+pool = mp.Pool(mp.cpu_count())
+
+results = pool.map(test_corpus_filename, [f for f in corpus_filenames])
+
+pool.close()
+
